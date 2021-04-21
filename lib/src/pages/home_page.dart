@@ -23,7 +23,7 @@ class HomePage extends StatelessWidget {
           final data = snapshot.data;
           return ListView.builder(
             itemCount: data.length,
-            itemBuilder: (context, index) => _createListTile(
+            itemBuilder: (context, index) => _createCard(
               context,
               data[index],
             ),
@@ -37,7 +37,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _createListTile(BuildContext context, RssItem item) {
+  Widget _createCard(BuildContext context, RssItem item) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -96,6 +96,17 @@ class HomePage extends StatelessWidget {
                 height: 10,
               ),
               Text('Fecha de publicación:\n ${item.pubDate}'),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    'webview',
+                    arguments:
+                        '<div style="width:100%">${item.description}</div>',
+                  );
+                },
+                child: Text('Ver noticia'),
+              ),
             ],
           ),
           padding: EdgeInsets.all(20),
