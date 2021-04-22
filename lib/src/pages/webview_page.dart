@@ -23,18 +23,24 @@ class _WebViewPageState extends State<WebViewPage> {
   @override
   Widget build(BuildContext context) {
     String data = ModalRoute.of(context).settings.arguments;
-    return WebView(
-      initialUrl: 'https://megaterios.co',
-      onWebViewCreated: (controller) {
-        _controller = controller;
-        _loadHTMLFromString(data);
-      },
-      onProgress: (progress) {
-        CircularProgressIndicator(
-          value: progress.toDouble(),
-        );
-      },
-      javascriptMode: JavascriptMode.unrestricted,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Noticia'),
+        brightness: Brightness.dark,
+      ),
+      body: WebView(
+        initialUrl: 'https://megaterios.co',
+        onWebViewCreated: (controller) {
+          _controller = controller;
+          _loadHTMLFromString(data);
+        },
+        onProgress: (progress) {
+          CircularProgressIndicator(
+            value: progress.toDouble(),
+          );
+        },
+        javascriptMode: JavascriptMode.unrestricted,
+      ),
     );
   }
 
