@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:rss_reader/src/services/rss_service.dart';
 import 'package:webfeed/webfeed.dart';
 
@@ -13,9 +14,20 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     RssService service = new RssService();
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: Text('Rss Data'),
+        title: Container(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Text(
+            'Lector Rss',
+            style: GoogleFonts.roboto(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
         brightness: Brightness.dark,
+        elevation: 0.0,
       ),
       body: _createHome(context, service),
       floatingActionButton: _createFloating(context),
@@ -24,7 +36,26 @@ class _HomePageState extends State<HomePage> {
 
   Widget _createHome(BuildContext context, RssService service) {
     if (_currentUrl != '') {
-      return _createFutureBuilder(context, service);
+      return SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 10),
+              padding: EdgeInsets.symmetric(vertical: 30),
+              child: Text(
+                'Noticias',
+                style: GoogleFonts.roboto(
+                  color: Colors.grey[950],
+                  fontSize: 35,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            _createFutureBuilder(context, service),
+          ],
+        ),
+      );
     } else {
       return Center(
         child: Column(
@@ -53,85 +84,49 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _createCard(BuildContext context, RssItem item) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 5.0,
-            spreadRadius: 2.0,
-            offset: Offset(2.0, 5.0),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          child: _createColumnItem(context, item),
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          'webview',
+          arguments: item.link,
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: EdgeInsets.symmetric(vertical: 25),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey[350],
+              blurRadius: 4.0,
+              spreadRadius: 2.0,
+            ),
+          ],
         ),
+        child: _createRow(item, context),
       ),
     );
   }
 
   String _getImagePath(RssItem item) {
-    final info = item.description.split('>');
-    String path = "";
-    info.forEach((element) {
-      if (element.contains('img')) {
-        var init = element.indexOf('src=') + 5;
-        var temp = element.substring(init);
-        var end = temp.indexOf('" ');
-        path = temp.substring(0, end);
-      }
-    });
-    return path.contains('http') ? path : null;
-  }
-
-  _createColumnItem(BuildContext context, RssItem item) {
-    final imagePath = _getImagePath(item);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Image(
-          image: imagePath == null
-              ? AssetImage('assets/newspaper.png')
-              : NetworkImage(imagePath),
-        ),
-        Container(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Text('Fecha de publicación:\n ${item.pubDate}'),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    'webview',
-                    arguments:
-                        '<div style="width:100%">${item.description}</div>',
-                  );
-                },
-                child: Text('Ver noticia'),
-              ),
-            ],
-          ),
-          padding: EdgeInsets.all(20),
-        ),
-      ],
-    );
+    if (item.enclosure != null) {
+      return item.enclosure.url;
+    } else {
+      final info = item.description.split('>');
+      String path = "";
+      info.forEach((element) {
+        if (element.contains('img')) {
+          var init = element.indexOf('src=') + 5;
+          var temp = element.substring(init);
+          var end = temp.indexOf('" ');
+          path = temp.substring(0, end);
+        }
+      });
+      return path.contains('http') ? path : null;
+    }
   }
 
   Widget _createFutureBuilder(BuildContext context, RssService service) {
@@ -142,6 +137,8 @@ class _HomePageState extends State<HomePage> {
           final data = snapshot.data;
           return ListView.builder(
             itemCount: data.length,
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
             itemBuilder: (context, index) => _createCard(
               context,
               data[index],
@@ -192,6 +189,43 @@ class _HomePageState extends State<HomePage> {
         );
       },
       child: Icon(Icons.open_in_browser),
+    );
+  }
+
+  Widget _createRow(RssItem item, BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final imagePath = _getImagePath(item);
+    return Row(
+      children: [
+        Column(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              width: size.width * 0.55,
+              child: Text(
+                item.title,
+                style: GoogleFonts.lato(
+                  fontSize: 18,
+                  color: Colors.grey[950],
+                ),
+              ),
+            ),
+          ],
+        ),
+        Container(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: FadeInImage(
+              placeholder: AssetImage('assets/newspaper.png'),
+              image: imagePath == null
+                  ? AssetImage('assets/newspaper.png')
+                  : NetworkImage(imagePath),
+              width: size.width * 0.35,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
