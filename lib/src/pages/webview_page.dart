@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -45,12 +44,6 @@ class _WebViewPageState extends State<WebViewPage> {
   }
 
   void _loadHTMLFromString(String data) {
-    data = data.replaceAll('<img ', '<img width="100%" ');
-    data = data.replaceAll('<iframe ', '<iframe width="99%"');
-    _controller.loadUrl(Uri.dataFromString(
-      data,
-      mimeType: 'text/html',
-      encoding: Encoding.getByName('utf-8'),
-    ).toString());
+    _controller.loadUrl(data);
   }
 }
